@@ -2,26 +2,31 @@ import requests
 import json
 import crawler
 import mysql.connector
+from my_settings import MY_DATABASES
 
 url = "https://dapi.kakao.com"
 API_KEY = "9ce2252d987df592085cb9f475f235f6"
 headers = {"Authorization" : f"KakaoAK {API_KEY}"}
 
 mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password=MYPASSWORD,
-    database='cafedata'
+    database = MY_DATABASES['DATABASE'],
+    user = MY_DATABASES['USER'],
+    password = MY_DATABASES['PASSWORD'],
+    host = MY_DATABASES['HOST'],
+    port = MY_DATABASES['PORT']
 )
-cur = mydb.cursor()
 
 def americano(local_y, local_x):
 
+    cur = mydb.cursor()
+
     path = f"/v2/local/search/keyword.json"
 
-    data = {"query":"카페", "category_group_code":"CE7", "x":local_x, "y":local_y, "radius":1000, "sort":"distance"}
+    data1 = {"query":"카페", "category_group_code":"CE7", "x":local_x, "y":local_y, "sort":"distance"}
+    data2 = {"query":"카페", "category_group_code":"CE7", "x":local_x, "y":local_y, "page":2, "sort":"distance"}
 
-    near_cafes = requests.get(url+path, headers = headers, params = data).json()['documents']
+    near_cafes = requests.get(url+path, headers = headers, params = data1).json()['documents']
+    near_cafes += requests.get(url+path, headers = headers, params = data2).json()['documents']
 
     filtered_cafes = list()
     id_list = list()
@@ -29,13 +34,14 @@ def americano(local_y, local_x):
     crawl_needed_cafes = list()
 
     info_contents = ("id", "place_name", "phone", "road_address_name", "x", "y")
-
     for i in range(len(near_cafes)):
         if ("북카페" in near_cafes[i]['category_name'].split() or "보드카페" in near_cafes[i]['category_name'].split()):
             continue
         else:
             id_list.append(near_cafes[i]['id'])
             filtered_cafes.append(near_cafes[i])
+            if len(id_list) == 20:
+                break
 
     cur.execute(f"SELECT * FROM cafe WHERE id IN {tuple(id_list)};")
     db_result = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
@@ -54,7 +60,7 @@ def americano(local_y, local_x):
                 else:
                     cafe_info[content] = ''
             crawl_needed_cafes.append(cafe_info)
-
+    crawl_id = list(set(crawl_id))
     if crawl_id:
         menu = crawler.extract_menu(crawl_id)
         for i, id in enumerate(crawl_id):
@@ -81,10 +87,3 @@ def americano(local_y, local_x):
 
     cur.close()
     return json.dumps({"Cafe":(db_result + crawled_result)}, ensure_ascii=False)
-
-
-'''
-local_x = 126.953706
-local_y = 37.478822
-result = americano(local_y, local_x)
-'''

@@ -6,7 +6,7 @@ test2.py
 test.json
 data.json
 my_settings.py
-map.html
+templates/map.html
 
 ### Flask ###
 instance/*
