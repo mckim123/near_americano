@@ -4,18 +4,18 @@
     <meta charset="utf-8">
     <title>닫기가 가능한 커스텀 오버레이</title>
     <style>
-    .wrap {position: absolute;left: 0;bottom: 40px;width: 288px;height: 132px;margin-left: -144px;text-align: left;overflow: hidden;font-size: 13px;font-family: 'Malgun Gothic', dotum, '돋움', sans-serif;line-height: 1.5;}
-    .wrap * {padding: 0;margin: 0;}
-    .wrap .info {width: 286px;height: 120px;border-radius: 5px;border-bottom: 2px solid #ccc;border-right: 1px solid #ccc;overflow: hidden;background: #fff;}
-    .wrap .info:nth-child(1) {border: 0;box-shadow: 0px 1px 2px #888;}
-    .info .title {padding: 5px 0 0 10px;height: 25px;background: #eee;border-bottom: 1px solid #ddd;font-size: 13x;font-weight: bold;}
-    .info .body {position: relative;overflow: hidden;}
-    .info .desc {position: relative;margin: 5px 0 0 13px;height: 75px;}
-    .desc .address {overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
-    .desc .phone {font-size: 13px;color: #888;margin-top: -2px;}
-    .info:after {content: ''; position: absolute;background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png')}
-    .info .link {color: #5085BB;}
-</style>
+        @import url('https://fonts.googleapis.com/css?family=Inter');
+        * {
+            font-family: "Inter", "Noto Sans", "Nanum Gothic", sans-serif;
+        }
+        .customoverlay {position:relative;bottom:115px;border-radius:6px;border: 2px solid #acacac;border-bottom:2px solid #ACACAC;float:left;}
+        .customoverlay:nth-of-type(n) {border:0; box-shadow:0px 1px 2px #888;}
+        .customoverlay a {display:block;text-decoration:none;color:#000;text-align:center;border-radius:6px;font-size:14px;font-weight:bold;overflow:auto;background: #A84F26;background: #A84F26 url(https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/arrow_white.png) no-repeat right 14px center;}
+        .customoverlay .title {display:block;text-align:center;background:#fff;margin-right:35px;padding:7px 20px 5px;font-size:15px;font-weight:550}
+        .customoverlay .price {display:block;text-align:center;background:#fff;margin-right:35px;padding:5px 15px 7px;font-size:15px;font-weight:700;}
+        .customoverlay img {vertical-align: text-bottom;}
+        .customoverlay:after {content:'';position:absolute;margin-left:-12px;left:50%;bottom:-12px;width:22px;height:12px;background:url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png')}
+    </style>
 </head>
 <body>
 <div id="map" style="width:100%;height:100vh;"></div>
@@ -23,6 +23,7 @@
 <script src="https://code.jquery.com/jquery-latest.min.js"></script> 
 
 <script>
+    
     var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
         mapOption = { 
             center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
@@ -31,14 +32,24 @@
 
     var map = new kakao.maps.Map(mapContainer, mapOption); // 지도 생성
 
+    var imageSrc = '/static/coffee_marker_image.png',
+    // 마커이미지의 주소  
+        imageSize = new kakao.maps.Size(62, 68), // 마커이미지의 크기
+        imageOption = {offset: new kakao.maps.Point(27, 68)}; 
+        // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정한다.
+
+    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+    // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
-            var lat = position.coords.latitude; // 위도
-            var lon = position.coords.longitude; // 경도
-            var locPosition = new kakao.maps.LatLng(lat, lon);
-            map.setCenter(locPosition);
-            fixPosition(locPosition);
-        })}
+        var lat = position.coords.latitude, // 위도
+            lon = position.coords.longitude, // 경도
+            locPosition = new kakao.maps.LatLng(lat, lon);
+        map.setCenter(locPosition);
+        fixPosition(locPosition);
+
+    })}
 
     else {
         var lat = 33.450701;
@@ -56,26 +67,26 @@
             clickable: true
         }); 
 
-        // 인포윈도우를 생성합니다
         var infowindow = new kakao.maps.InfoWindow({
-            content : "마커 좌클릭 시 위치 고정",
+            content : "마커 좌클릭 시 검색",
             removable : false
         });
 
-        // 인포윈도우를 마커위에 표시합니다 
+        // 인포윈도우를 마커위에 표시한다 
         infowindow.open(map, marker);
 
         kakao.maps.event.addListener(marker, 'dragstart', function() {
-        // 마커의 드래그가 시작될 때 인포윈도우도 따라가도록 합니다
+        // 마커의 드래그가 시작될 때 인포윈도우가 사라지도록 한다.
             infowindow.close();});
 
         kakao.maps.event.addListener(marker, 'dragend', function() {
-        // 마커의 드래그가 종료될 때 infowindow를 닫는다.
+        // 마커의 드래그가 종료될 때 infowindow를 다시 띄운다.
             infowindow.open(map, marker);
             marker.clickable = false;
         });
 
-        var mapClickHandler = function(mouseEvent) {        
+        var mapClickHandler = function(mouseEvent) {
+        // 지도를 클릭하면 마커가 이동하도록 한다.        
             var latlng = mouseEvent.latLng; 
             marker.setPosition(latlng);
             infowindow.setPosition(latlng);
@@ -85,77 +96,66 @@
 
         kakao.maps.event.addListener(marker, 'click', function() {
             latlng = marker.getPosition();
+            // 현재 마커의 위치를 저장한다.
             map.setCenter(latlng);
+            // 현 위치로 중심을 이동한다.
             infowindow.close();
             kakao.maps.event.removeListener(map, 'click', mapClickHandler);
+            // 지도가 더이상 클릭되지 않도록 한다.
             marker.setDraggable(false);
+            marker.setClickable(false);
+            // 마커의 위치를 고정한다.
             map.level = 3;
             postCafe(latlng, showCafes);
+            // 주위 카페 이미지를 띄우는 함수를 호출한다.
         });
     };
 
     function showCafes(result){
+        // 응답 정보를 바탕으로 카페 마커를 생성한다.
         if (result == []){
             pass
         }
         else {
-            var cafemarker = new kakao.maps.Marker({
-                map: map,
-                position: new kakao.maps.LatLng(lat, lon)
-            })
-
-            var markers = [];
-
             for (i in result.Cafe) {
                 e = result.Cafe[i];
+                var marker = new kakao.maps.Marker({
+                                map: map,
+                                position: new kakao.maps.LatLng(e.y, e.x),
+                                image:markerImage,
+                                clickable : true
+                                });
+
                 if (e.americano==0){
-                    var marker = new kakao.maps.Marker({
-                        map: map,
-                        position: new kakao.maps.LatLng(e.y, e.x)
-                    });
+                    var content = '<div class="customoverlay" style="bottom:97px;">' +
+                                '  <a href="http://place.map.kakao.com/' + e.id + '" target="_blank">' +
+                                '    <span class="title">' + e.place_name + '</span>' +
+                                '  </a>' +
+                                '</div>';                                    
                 }
                 else {
-                    var marker = new kakao.maps.Marker({
-                        map: map,
-                        position: new kakao.maps.LatLng(e.y, e.x)
-                    });
-
-                    var content = '<div class="wrap">' +
-                                '    <div class="info">' +
-                                '        <div class="title">' +
-                                            e.place_name +
-                                '        </div>' +
-                                '        <div class="body">' +
-                                '            <div class="desc">' + e.americano + 
-                                '               <div class="address">' + e.road_address_name + '</div>' +
-                                '                <div class="phone">' + e.phone + '</div>' +
-                                '                <div><a href=http://place.map.kakao.com/' + e.id + ' target="_blank" class="link">홈페이지</a></div>' +
-                                '            </div>' +
-                                '        </div>' +
-                                '    </div>' +
+                    var content = '<div class="customoverlay">' +
+                                '  <a href="http://place.map.kakao.com/' + e.id + '" target="_blank">' +
+                                '    <span class="title">' + e.place_name + '</span>' +
+                                '    <span class="price">' +
+                                '       <img src="/static/coffee_icon.png">    '+ e.americano +
+                                '    </span>' +
+                                '  </a>' +
                                 '</div>';
-                                    
-
-                    // 마커 위에 커스텀오버레이를 표시합니다
-                    // 마커를 중심으로 커스텀 오버레이를 표시하기위해 CSS를 이용해 위치를 설정했습니다
-                    var overlay = new kakao.maps.CustomOverlay({
+                }
+                
+                overlay = new kakao.maps.CustomOverlay({
                         content: content,
                         map: map,
-                        position: marker.getPosition()
-                    });
+                        position: marker.getPosition(),
+                });
+                
+                overlay.setVisible(false);
 
-                    // 마커를 클릭했을 때 커스텀 오버레이를 표시합니다
-                    kakao.maps.event.addListener(marker, 'click', function() {
-                        if(overlay.getMap()==null){
-                            overlay.setMap(map);
-                        }
-                        else{
-                            overlay.setMap(null);
-                        }
-                    });
-                    markers.push(marker);
-                }
-            };
+                (function(marker, overlay) {
+                kakao.maps.event.addListener(marker, 'click', function() {
+                    overlay.setVisible(!overlay.getVisible())})})(marker, overlay);
+                };
         };
     };
 
@@ -163,6 +163,7 @@
         lat = latlng.getLat();
         lon = latlng.getLng();
         $.ajax({
+        // 비동기식으로 ajax 요청을 한다.
             type : 'POST',
             url : '/',
             dataType : 'json',
