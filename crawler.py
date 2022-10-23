@@ -23,7 +23,10 @@ def extract_menu(id_list):
         for coffee in coffees:
             if coffee.find("em", class_="price_menu") is None:
                 break
-            price = int(coffee.find("em", class_="price_menu").contents[-1].replace(',', ''))
+            try : 
+                price = int(coffee.find("em", class_="price_menu").contents[-1].replace(',', ''))
+            except :
+                continue
             name = coffee.find("span", class_="loss_word").string
             menu_list[name] = price
         full_menu[id] = menu_list
