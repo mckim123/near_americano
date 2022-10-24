@@ -34,7 +34,7 @@ def extract_menu(id_list):
             try : 
                 price = int(coffee.find("em", class_="price_menu").contents[-1].replace(',', ''))
             except :
-                continue
+                break
             name = coffee.find("span", class_="loss_word").string
             if name is None:
                 name = str(coffee.find("span", class_="loss_word")).split('</span>')[-2]

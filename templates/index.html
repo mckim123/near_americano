@@ -2,7 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>닫기가 가능한 커스텀 오버레이</title>
+    <title>COFFEE_COFFEE_COFFEE</title>
+    <link rel="icon" href="/static/coffee_icon.png">
     <style>
         @import url('https://fonts.googleapis.com/css?family=Inter');
         * {
@@ -58,6 +59,7 @@
         map.setCenter(locPosition);
         fixPosition(locPosition);
     };
+   
 
     function fixPosition(locPosition) {
         var marker = new kakao.maps.Marker({  
@@ -68,7 +70,7 @@
         }); 
 
         var infowindow = new kakao.maps.InfoWindow({
-            content : "마커 좌클릭 시 검색",
+            content : " 마커 좌클릭 시 검색",
             removable : false
         });
 
