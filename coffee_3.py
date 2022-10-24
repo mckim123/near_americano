@@ -33,9 +33,11 @@ def americano(local_y, local_x):
     crawl_id = list()
     crawl_needed_cafes = list()
 
+    remove_set = {"보드카페", "북카페", "만화카페", "라이브카페", "고양이카페"}
+    
     info_contents = ("id", "place_name", "phone", "road_address_name", "x", "y")
     for i in range(len(near_cafes)):
-        if ("북카페" in near_cafes[i]['category_name'].split() or "보드카페" in near_cafes[i]['category_name'].split()):
+        if (set(near_cafes[i]['category_name'].split()) & remove_set) or ("방탈출" in near_cafes[i]['place_name']):
             continue
         else:
             id_list.append(near_cafes[i]['id'])
@@ -52,30 +54,35 @@ def americano(local_y, local_x):
 
     for i in range(len(filtered_cafes)):
         if filtered_cafes[i]['id'] not in found_id:
-            crawl_id.append(filtered_cafes[i]['id'])
             cafe_info = {}
             for content in info_contents:
                 if filtered_cafes[i][content]:
                     cafe_info[content] = filtered_cafes[i][content]
                 else:
                     cafe_info[content] = ''
+            crawl_id.append(filtered_cafes[i]['id'])
             crawl_needed_cafes.append(cafe_info)
-    crawl_id = list(set(crawl_id))
+
     if crawl_id:
         menu = crawler.extract_menu(crawl_id)
         for i, id in enumerate(crawl_id):
             has_americano = False
             for menu_name in menu[id].keys():
-                if '아메리카노' in menu_name:
+                if ('아메리카노' in menu_name or 'americano' in menu_name) and \
+                    ('ice' in menu_name or '아이스' in menu_name):
                     menu[id] = menu[id][menu_name]
                     has_americano = True
                     break
-                elif 'americano' in menu_name:
-                    menu[id] = menu[id][menu_name]
-                    has_americano = True
-                    break
+            if not has_americano:
+                for menu_name in menu[id].keys():
+                    if ('아메리카노' in menu_name or 'americano' in menu_name):
+                        menu[id] = menu[id][menu_name]
+                        has_americano = True
+                        break
+
             if has_americano:
                 crawl_needed_cafes[i]["americano"] = menu[id]
+
             else:
                 crawl_needed_cafes[i]["americano"] = 0
             crawled_result.append(crawl_needed_cafes[i])
