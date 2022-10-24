@@ -4,6 +4,9 @@ import crawler
 import mysql.connector
 from my_settings import MY_DATABASES
 
+with open('franchise.json', 'r', encoding = 'utf-8') as j:
+    franchise = json.load(j)
+
 url = "https://dapi.kakao.com"
 API_KEY = "9ce2252d987df592085cb9f475f235f6"
 headers = {"Authorization" : f"KakaoAK {API_KEY}"}
@@ -32,17 +35,33 @@ def americano(local_y, local_x):
     id_list = list()
     crawl_id = list()
     crawl_needed_cafes = list()
-
+    franchise_result = list()
     remove_set = {"보드카페", "북카페", "만화카페", "라이브카페", "고양이카페"}
     
     info_contents = ("id", "place_name", "phone", "road_address_name", "x", "y")
+    
+    count = 0
     for i in range(len(near_cafes)):
-        if (set(near_cafes[i]['category_name'].split()) & remove_set) or ("방탈출" in near_cafes[i]['place_name']):
+        place_name_set = set(near_cafes[i]['category_name'].split())
+
+        if (place_name_set & remove_set) or ("방탈출" in near_cafes[i]['place_name']) or \
+            ("낚시카페" in near_cafes[i]['place_name']):
             continue
+        elif (franchise.keys() & place_name_set):
+            cafe_info = {}
+            for content in info_contents:
+                if near_cafes[i][content]:
+                    cafe_info[content] = near_cafes[i][content]
+                else:
+                    cafe_info[content] = ''
+            cafe_info["americano"] = franchise[list(franchise.keys() & place_name_set)[0]]
+            franchise_result.append(cafe_info)
+            count += 1
         else:
             id_list.append(near_cafes[i]['id'])
             filtered_cafes.append(near_cafes[i])
-            if len(id_list) == 20:
+            count += 1
+            if count == 20:
                 break
 
     cur.execute(f"SELECT * FROM cafe WHERE id IN {tuple(id_list)};")
@@ -93,4 +112,4 @@ def americano(local_y, local_x):
         mydb.commit()
 
     cur.close()
-    return json.dumps({"Cafe":(db_result + crawled_result)}, ensure_ascii=False)
+    return json.dumps({"Cafe":(franchise_result + db_result + crawled_result)}, ensure_ascii=False)
