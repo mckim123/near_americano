@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>COFFEE_COFFEE_COFFEE</title>
+    <title>Near_Americano</title>
     <link rel="icon" href="/static/coffee_icon.png">
     <style>
         @import url('https://fonts.googleapis.com/css?family=Inter');
@@ -19,7 +19,21 @@
     </style>
 </head>
 <body>
-<div id="map" style="width:100%;height:100vh;"></div>
+<div id="map" style="width:100%;height:85vh;"></div>
+<p>
+    <button onclick="hidePriceMarkers()">가격 정보 있는 마커 감추기</button>
+    <button onclick="showPriceMarkers()">가격 정보 있는 마커 보이기</button>
+</p> 
+<p>
+    <button onclick="hideNopriceMarkers()">가격 정보 없는 마커 감추기</button>
+    <button onclick="showNopriceMarkers()">가격 정보 없는 마커 보이기</button>
+</p>
+<p>
+    <input type = 'number' min = '500' max = '10000' step = '100' id = "targetprice", value = "3000">
+    <button onclick="filterPriceMarkers()">원 이하 카페만 보기</button>
+    * 카카오맵에 가격 정보를 등록하지 않은 가게는 표시되지 않을 수 있습니다.
+<p>
+
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7e9a9b13be9fa68e0f74c3f57b0000da"></script>
 <script src="https://code.jquery.com/jquery-latest.min.js"></script> 
 
@@ -27,7 +41,7 @@
     var id_set = new Set();
     var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
         mapOption = { 
-            center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+            center: new kakao.maps.LatLng(37.395616, 127.110570), // 지도의 중심좌표
             level: 2 // 지도의 확대 레벨 
         }; 
 
@@ -38,7 +52,10 @@
         imageSize = new kakao.maps.Size(62, 68), // 마커이미지의 크기
         imageOption = {offset: new kakao.maps.Point(27, 68)}; 
         // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정한다.
-
+    
+    var price_markers = [];
+    var noprice_markers = [];
+    
     var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
     // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
 
@@ -50,8 +67,8 @@
             fixPosition(locPosition);
         }, 
         function(){
-            var lat = 33.450701;
-            var lon = 126.570667;
+            var lat = 37.395616;
+            var lon = 127.110570;
             var locPosition = new kakao.maps.LatLng(lat, lon);
             map.setCenter(locPosition);
             fixPosition(locPosition);
@@ -104,7 +121,6 @@
             // 지도가 더이상 클릭되지 않도록 한다.
             user_marker.setDraggable(false);
             user_marker.setClickable(false);
-            console.log(false);
             // 마커의 위치를 고정한다.
             map.level = 3;
             postCafe(latlng, showCafes, user_marker, infowindow);
@@ -157,12 +173,21 @@
                     
                     if (e.americano == 0){
                         overlay.setVisible(false);
+                        noprice_markers.push([marker, overlay, e.americano]);
                     }
-                    //
+                    else{
+                        price_markers.push([marker, overlay, e.americano]);
+                    }
                     (function(marker, overlay) {
                     kakao.maps.event.addListener(marker, 'click', function() {
-                        overlay.setVisible(!overlay.getVisible())})})(marker, overlay);
-                    
+                        overlay.setVisible(!overlay.getVisible())})
+                    kakao.maps.event.addListener(marker, 'mouseover', function() {
+                        marker.setVisible(false);
+                        marker.setVisible(true);
+                        if (overlay.getVisible()){
+                            overlay.setVisible(false);
+                            overlay.setVisible(true);
+                        }})})(marker, overlay);
                     id_set.add(e.id)
                     };
                 }
@@ -200,7 +225,47 @@
                 console.log(request + "/" + status + "/" + error);
             }
         });
-    }  
+    } 
+    function setMarkers(markers, map) {
+        for (var i = 0; i < markers.length; i++) {
+            markers[i][0].setMap(map);
+            markers[i][1].setMap(map);
+        }            
+    }
+    function filterMarkers(markers, map, value){
+        for (var i = 0; i<markers.length;i++){
+            if (0 < markers[i][2] && markers[i][2]<=value){
+                markers[i][0].setMap(map);
+                markers[i][1].setMap(map);
+            }
+            else {
+                markers[i][0].setMap(null);
+                markers[i][1].setMap(null);
+            }
+        }
+    }
+
+
+
+    function showPriceMarkers() {
+        setMarkers(price_markers, map);    
+    }
+    function hidePriceMarkers() {
+        setMarkers(price_markers, null);    
+    }
+    function showNopriceMarkers() {
+        setMarkers(noprice_markers, map);    
+    }
+    function hideNopriceMarkers() {
+        setMarkers(noprice_markers, null);    
+    }
+    function filterPriceMarkers() {
+        var input = document.getElementById('targetprice');
+        if(input.value != null){
+            filterMarkers(price_markers.concat(noprice_markers), map, input.value);
+        }
+    }
+
 </script>
 </body>
 </html>
