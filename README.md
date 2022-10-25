@@ -106,7 +106,7 @@ flask run --host=0.0.0.0
 <br/><br/>
 
 
-5. 인포윈도우를 클릭하면 카카오맵 링크로 이동합니다.
+5. 인포윈도우를 클릭하면 카카오맵 링크로 이동다.
 
 <img width = 50% src = "https://user-images.githubusercontent.com/43123236/197795916-bd74ac34-9184-48cd-bcef-8c73e5e67fca.gif">
 
