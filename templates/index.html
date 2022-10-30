@@ -45,8 +45,7 @@
 <script>
     const id_set = new Set(); // 중복 마커를 방지하기 위하여 마커를 생성한 id의 set을 생성
     const price_markers = [],
-        noprice_markers = [],
-        all_markers = [...price_markers, ...noprice_markers]; // 버튼으로 여러 마커 제어를 위한 리스트 생성
+        noprice_markers = []; // 버튼으로 여러 마커 제어를 위한 리스트 생성
     
     const mapContainer = document.getElementById('map'), // 지도를 표시할 div 지정
         mapOption = { 
@@ -260,7 +259,7 @@
     function filterPriceMarkers() {
         var input = document.getElementById('targetprice');
         if(input.value != null){
-            filterMarkers(all_markers, map, input.value);
+            filterMarkers([...price_markers, ...noprice_markers], map, input.value);
         }
     }
 

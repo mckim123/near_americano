@@ -11,10 +11,10 @@ def index():
 @app.route('/', methods = ['POST'])
 def getCafe():
     try:
-        lat = request.get_data().decode().split('&')[0][4:]
-        lon = request.get_data().decode().split('&')[1][4:]
-
-        if lat and lon:
+        latlng = request.get_json()
+        lat = str(latlng['lat'])
+        lon = str(latlng['lon'])
+        if latlng:
             return jsonify(coffee_3.americano(lat, lon))
         else:
             return jsonify("No data")
