@@ -76,7 +76,7 @@ flask run --host=0.0.0.0
 
 1. 초기 화면은 다음과 같다.
 
-<img width = 50% src = "https://user-images.githubusercontent.com/43123236/197792693-3386d541-8a2f-4b18-862e-a10459616c61.PNG">
+<img width = 80% src = "https://user-images.githubusercontent.com/43123236/198879241-af0656b4-46ad-44b0-8c56-57fd5c8fcb10.PNG">
 
 <br/><br/>
 
@@ -86,7 +86,7 @@ flask run --host=0.0.0.0
 - 아메리카노 가격 정보가 없는 카페는 최초에 인포윈도우가 닫힌 마커로 등장한다. 클릭하면 인포윈도우가 열린다.
 - 최초로 검색하는 구역인 경우 시간이 걸릴 수 있다.
 
-<img width = 50% src = "https://user-images.githubusercontent.com/43123236/197795901-0eec566a-914c-4e69-8d28-fab0cd655290.gif">
+<img width = 80% src = "https://user-images.githubusercontent.com/43123236/198881176-ddb8c31f-155e-41d0-83c8-4d8f4e46ec58.gif">
 
 <br/><br/>
 
@@ -94,21 +94,57 @@ flask run --host=0.0.0.0
 - 마우스를 마커 위에 올리면 해당 마커와 오버레이를 앞으로 끌어온다.
 - 모든 마커는 클릭하면 오버레이가 생성되며 재클릭시 사라진다.
 
-<img width = 50% src = "https://user-images.githubusercontent.com/43123236/197795911-b9a8b094-9701-492d-a24d-b5ad2faa7fbb.gif">
+<img width = 80% src = "https://user-images.githubusercontent.com/43123236/198881183-cc4068e4-a1ae-4cab-abb5-87f5f207ea33.gif">
 
 <br/><br/>
 
-4. 좌측 하단의 input에 가격을 입력하고 버튼을 누르면 해당 값 이하의 가격을 갖는 카페만 나오게 됩니다.
-- 가격은 500에서 10000까지를 100 단위로 입력할 수 있습니다.  
+4. 좌측 하단의 버튼을 활용하면 GPS 기능을 사용하여 화면을 이동할 수 있다.
+- localhost 또는 https 통신에서만 가능하여 아직은 배포시 사용이 불가능하다.
 
-<img width = 50% src = "https://user-images.githubusercontent.com/43123236/197795914-bdb1eeee-f555-4b5e-aef8-d0b1ea1141dc.gif">
+<img width = 80% src = "https://user-images.githubusercontent.com/43123236/198881187-883423c5-4dd4-43ee-b4a2-619168637501.gif">
+
+
+
+5. 좌측 하단의 input에 가격을 입력하고 버튼을 누르면 해당 값 이하의 가격을 갖는 카페만 나오게 된다.
+- 가격은 500에서 10000까지를 100 단위로 입력할 수 있다.  
+
+<img width = 80% src = "https://user-images.githubusercontent.com/43123236/198879708-4dce60ac-2029-4ef9-b5d9-a442561cbc2a.gif">
 
 <br/><br/>
 
 
-5. 인포윈도우를 클릭하면 카카오맵 링크로 이동다.
+6. 인포윈도우를 클릭하면 카카오맵 링크로 이동한다.
 
-<img width = 50% src = "https://user-images.githubusercontent.com/43123236/197795916-bd74ac34-9184-48cd-bcef-8c73e5e67fca.gif">
+<a href="https://user-images.githubusercontent.com/43123236/198879824-1d0423b7-e62f-4c51-abfb-4d8b23bed487.gif"><img width = 80% src = "https://user-images.githubusercontent.com/43123236/198879824-1d0423b7-e62f-4c51-abfb-4d8b23bed487.gif" alt = '링크 이동'></a>
+
+<br/><br/>
+<br/><br/>
+
+
+## Workflows
+
+1. Kakao 지도 API의 지도, 마커 생성
+    - 카카오 지도 API에서 제공하는 지도를 화면에 표시한다. 이후 파란색 마커를 생성한다.(사용자의 위치를 지정하는 역할)
+    - 사용자가 마커를 클릭하면 마커의 자리는 고정되며, fetch() 함수를 활용하여 API 요청(POST)을 비동기적으로 보낸다.(async, await)
+
+2. Flask server에서 API 호출 수신
+    - POST 요청을 통해 전달받은 위도, 경도 정보를 활용하여 결과를 반환하도록 coffee_3.py를 실행하며, 위도, 경도 정보를 인자로 전달한다.
+
+3. coffee_3.py의 실행
+    - 전달받은 위도, 경도 정보를 바탕으로 근처 카페 정보에 대한 카카오 API 요청을 보낸다.(거리순으로 인근 30개를 수신한다.)
+    - 받은 카페 정보 중 만화카페, 보드게임카페, 고양이카페, 라이브카페 등 커피가 주 목적이 아닌 카테고리를 제외하고 최대 20개의 카페 정보만 남긴다.
+    - 저장된 프랜차이즈 카페들은 가격 정보를 바로 적용한다.
+    - 다른 카페들에 대해서는 database에서 검색하여 이미 크롤링한 기록이 있다면 해당 정보를 불러오고, 정보가 없는 카페들에 대해서는 id list를 생성 후 crawler.py를 실행하여 아메리카노 가격 정보가 있는지 정보를 생성한다.
+    - 반환된 결과를 database에 반영한 후 Flask server에 return한다.
+
+4. Flask server Response
+    - coffee_3.py의 함수에서 return받은 결과를 응답한다.
+
+5. index.html에서 정보 수신
+    - 비동기적으로 수신한 json파일을 이용하여 마커를 생성한다.
+    - 이미 생성한 마커는 넘어가고 그렇지 않은 경우 커피 모양 마커, 그 위 가게명, 가격 정보, 링크를 담은 오버레이를 생성한다.
+    - 각각의 마커에 대해 이벤트리스너가 정상적으로 작동할 수 있도록 클로져를 사용한다.
+
 
 <br/><br/>
 <br/><br/>
