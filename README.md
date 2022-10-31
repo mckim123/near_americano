@@ -1,6 +1,8 @@
 Near Americano
 ================
 
+현재 http://218.236.76.30:5000/ 에서 확인하실 수 있습니다.
+
 ## About the Project
 
 Near Americano는 위치 기반 근처 카페 아메리카노 가격 검색 서비스이다.
