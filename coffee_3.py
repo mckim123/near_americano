@@ -8,7 +8,7 @@ with open('franchise.json', 'r', encoding = 'utf-8') as j:
     franchise = json.load(j)
 
 url = "https://dapi.kakao.com"
-API_KEY = "9ce2252d987df592085cb9f475f235f6"
+API_KEY = ""
 headers = {"Authorization" : f"KakaoAK {API_KEY}"}
 
 mydb = mysql.connector.connect(
